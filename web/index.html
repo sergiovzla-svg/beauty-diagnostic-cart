@@ -33,7 +33,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <div id="app" class="app-container">
@@ -45,6 +45,23 @@
       <p class="brand-sub">PROFESSIONNEL</p>
       <div class="brand-divider"></div>
     </header>
+
+    <!-- BANNER OFERTA FLASH DE LIQUIDACIÓN -->
+    <section id="flash-offers-banner" class="flash-offers-section">
+      <div class="flash-offers-header">
+        <span class="flash-badge">⚡ OFERTA ESPECIAL DE LIQUIDACIÓN</span>
+        <h2 class="flash-title">Productos Profesionales de Salón</h2>
+        <p class="flash-subtitle">
+          Estilismo, tratamientos técnicos y la línea "Para Ellos" · Stock limitado directo de bodega
+        </p>
+      </div>
+      <div id="flash-offers-grid" class="flash-offers-grid">
+        <!-- Renderizado dinámicamente por JS con productos de categoría estilismo/complemento/para-ellos -->
+      </div>
+      <button id="btn-ver-catalogo-completo" class="btn-ver-mas" type="button">
+        Ver catálogo completo →
+      </button>
+    </section>
 
     <!-- NAVEGACIÓN PRINCIPAL (TABS) -->
     <nav class="main-nav-tabs" role="tablist">
@@ -222,6 +239,9 @@
           <button class="filter-pill" data-filter="mascara">Máscaras</button>
           <button class="filter-pill" data-filter="tratamiento">Tratamientos / Aceites</button>
           <button class="filter-pill" data-filter="peinado">Fijación / Sprays</button>
+          <button class="filter-pill" data-filter="estilismo" type="button">✂️ Estilismo</button>
+          <button class="filter-pill" data-filter="complemento" type="button">🔬 Técnico</button>
+          <button class="filter-pill" data-filter="para-ellos" type="button">👔 Para Ellos</button>
         </div>
 
         <div class="catalog-results-meta">

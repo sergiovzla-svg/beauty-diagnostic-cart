@@ -12,6 +12,8 @@
   --gold-light: #F3E5AB;
   --gold-gradient: linear-gradient(135deg, #E5C365 0%, #D4AF37 50%, #B89028 100%);
   --gold-glow: rgba(212, 175, 55, 0.25);
+  --gold: #D4AF37;
+  --gold-rgb: 212, 175, 55;
   
   --whatsapp-green: #25D366;
   --whatsapp-gradient: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
@@ -1500,5 +1502,221 @@ body {
 .luxury-toast.hide {
   opacity: 0;
   transform: translateY(10px) scale(0.96);
+}
+
+/* =====================================================================
+   V2.0 COMPONENTES: BANNER FLASH, BADGES & SECCIÓN COMPLEMENTARIA
+   ===================================================================== */
+
+/* Banner Ofertas Flash */
+.flash-offers-section {
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1505 100%);
+  border: 1px solid rgba(var(--gold-rgb, 198,160,50), 0.25);
+  border-radius: 16px;
+  margin: 1rem 1rem 0;
+  padding: 1.5rem 1rem;
+}
+.flash-offers-header { 
+  text-align: center; 
+  margin-bottom: 1.2rem; 
+}
+.flash-badge {
+  display: inline-block;
+  background: linear-gradient(90deg, #c6a032, #f0d060);
+  color: #0a0800;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 0.6rem;
+}
+.flash-title {
+  font-family: 'Cinzel', serif;
+  color: var(--gold, #c6a032);
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  margin: 0.3rem 0;
+}
+.flash-subtitle { 
+  color: rgba(255,255,255,0.6); 
+  font-size: 0.82rem; 
+  margin: 0; 
+}
+.flash-offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.btn-ver-mas {
+  display: block;
+  margin: 0 auto;
+  background: transparent;
+  border: 1px solid rgba(var(--gold-rgb, 198,160,50), 0.5);
+  color: var(--gold, #c6a032);
+  padding: 8px 24px;
+  border-radius: 24px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.btn-ver-mas:hover {
+  background: var(--gold, #c6a032);
+  color: #0a0800;
+}
+
+/* Badges y tips de categorías de producto */
+.product-category-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
+}
+.product-category-tip {
+  display: block;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.7rem;
+  font-style: italic;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+/* Sección Complementaria Post-Diagnóstico */
+.complementary-section {
+  margin-top: 2rem;
+  padding: 1.5rem 1rem;
+  border-top: 1px solid rgba(var(--gold-rgb,198,160,50), 0.2);
+}
+.comp-header { 
+  text-align: center; 
+  margin-bottom: 1rem; 
+}
+.comp-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold, #c6a032);
+}
+.comp-title {
+  font-family: 'Cinzel', serif;
+  color: white;
+  font-size: 1.1rem;
+  margin: 0.4rem 0 0.2rem;
+}
+.comp-sub { 
+  color: rgba(255,255,255,0.5); 
+  font-size: 0.8rem; 
+  margin: 0; 
+}
+.comp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.7rem;
+}
+
+/* Tarjetas Compactas para Banner Flash y Sección Complementaria */
+.compact-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+}
+.compact-card:hover {
+  border-color: var(--border-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.compact-card.in-cart {
+  border-color: var(--gold-primary);
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.08) 0%, var(--bg-card) 100%);
+}
+.compact-img-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #0a0a0d;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  overflow: hidden;
+}
+.compact-img-wrap img {
+  max-width: 85%;
+  max-height: 85%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+.compact-card:hover .compact-img-wrap img {
+  transform: scale(1.05);
+}
+.compact-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.compact-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.25;
+  margin-bottom: 0.2rem;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.compact-format {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+.compact-price-wrap {
+  margin-top: auto;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+.compact-price {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+.compact-ref {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+.compact-action-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-gold);
+  color: var(--gold-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-sans);
+}
+.compact-action-btn:hover {
+  background: var(--gold-primary);
+  color: #0a0800;
+}
+.compact-action-btn.added {
+  background: var(--gold-gradient);
+  color: #0a0800;
+  border-color: transparent;
+  font-weight: 700;
 }
 

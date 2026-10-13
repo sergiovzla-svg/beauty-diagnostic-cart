@@ -253,6 +253,165 @@ function formatCLP(amount) {
 }
 
 // -------------------------------------------------------------
+// CATEGORIZACIÓN DE PRODUCTOS POR TIPO COMERCIAL
+// -------------------------------------------------------------
+function getCategoryInfo(product) {
+  const linea = (product.linea || "").toLowerCase().trim();
+
+  if (linea.startsWith("tecni") || linea === "infinium pure") {
+    return {
+      category: "estilismo",
+      label: "Estilismo",
+      badge: "✂️ Estilismo Profesional",
+      color: "#8B5CF6"
+    };
+  }
+  if (linea === "smartbond") {
+    return {
+      category: "complemento",
+      label: "Tratamiento Técnico",
+      badge: "🔬 Post-Química",
+      color: "#0EA5E9",
+      tip: "Ideal si realizas decoloraciones o tinturas"
+    };
+  }
+  if (linea === "bed head") {
+    return {
+      category: "complemento",
+      label: "Complemento",
+      badge: "💧 Leave-in",
+      color: "#0EA5E9"
+    };
+  }
+  if (linea === "american crew") {
+    return {
+      category: "para-ellos",
+      label: "Para Ellos",
+      badge: "👔 Para Ellos · Regalo Ideal",
+      color: "#F59E0B"
+    };
+  }
+  return { category: "cuidado", label: "Cuidado Capilar", badge: null, color: null };
+}
+
+// -------------------------------------------------------------
+// RENDERIZADO DE TARJETAS COMPACTAS (BANNER FLASH & COMPLEMENTOS)
+// -------------------------------------------------------------
+function renderCompactCards(products, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = "";
+
+  products.forEach(prod => {
+    const key = prod.id + "_" + prod.formato;
+    const catInfo = getCategoryInfo(prod);
+    const cartItem = state.cart[key];
+    const isSelected = cartItem && cartItem.selected;
+
+    const badgeHTML = catInfo.badge
+      ? `<span class="product-category-badge" style="background:${catInfo.color}20; color:${catInfo.color}; border:1px solid ${catInfo.color}40;">${catInfo.badge}</span>`
+      : "";
+    const tipHTML = catInfo.tip
+      ? `<small class="product-category-tip">${catInfo.tip}</small>`
+      : "";
+
+    const card = document.createElement("article");
+    card.className = `compact-card ${isSelected ? "in-cart" : ""}`;
+    card.id = `${containerId}-card-${key}`;
+
+    card.innerHTML = `
+      <div class="compact-img-wrap" data-action="details" data-key="${key}">
+        <img src="${prod.foto}" alt="${prod.nombre}" loading="lazy" onerror="this.style.opacity='0.5'">
+      </div>
+      <div class="compact-info">
+        ${badgeHTML}
+        <h4 class="compact-name" data-action="details" data-key="${key}">${prod.titulo_comercial || prod.nombre}</h4>
+        <span class="compact-format">${prod.formato}</span>
+        ${tipHTML}
+        <div class="compact-price-wrap">
+          <span class="compact-price">${formatCLP(prod.precio_venta)}</span>
+          ${prod.precio_mercado ? `<span class="compact-ref">Ref. ${formatCLP(prod.precio_mercado)}</span>` : ""}
+        </div>
+        <button class="compact-action-btn ${isSelected ? "added" : ""}" type="button" data-action="toggle" data-key="${key}">
+          ${isSelected ? "En pedido ✓" : "+ Agregar"}
+        </button>
+      </div>
+    `;
+
+    // Click en imagen o nombre para modal de detalles
+    card.querySelectorAll('[data-action="details"]').forEach(el => {
+      el.addEventListener("click", () => abrirModal(prod, key));
+    });
+
+    // Toggle para agregar/quitar del pedido
+    const btnToggle = card.querySelector('[data-action="toggle"]');
+    btnToggle.addEventListener("click", () => {
+      if (!state.cart[key]) {
+        state.cart[key] = { product: prod, quantity: 1, selected: true };
+      } else {
+        state.cart[key].selected = !state.cart[key].selected;
+      }
+      const nowSelected = state.cart[key].selected;
+      card.classList.toggle("in-cart", nowSelected);
+      btnToggle.classList.toggle("added", nowSelected);
+      btnToggle.textContent = nowSelected ? "En pedido ✓" : "+ Agregar";
+
+      // Sincronizar catálogo si existe
+      const catCheck = document.getElementById(`cat-check-${key}`);
+      if (catCheck) {
+        catCheck.checked = nowSelected;
+        const catCard = document.getElementById(`catalog-card-${key}`);
+        if (catCard) {
+          catCard.classList.toggle("in-cart", nowSelected);
+          catCard.querySelector(".toggle-btn span").textContent = nowSelected ? "Agregado al pedido ✓" : "+ Agregar al pedido";
+          const st = catCard.querySelector(`#cat-stepper-${key}`);
+          if (st) {
+            st.style.opacity = nowSelected ? "1" : "0.3";
+            st.style.pointerEvents = nowSelected ? "auto" : "none";
+          }
+        }
+      }
+
+      // Sincronizar rutina si existe
+      const rutinaCheck = document.getElementById(`check-${key}`);
+      if (rutinaCheck) {
+        rutinaCheck.checked = nowSelected;
+        const rutinaCard = document.getElementById(`card-${key}`);
+        if (rutinaCard) {
+          rutinaCard.classList.toggle("in-cart", nowSelected);
+          rutinaCard.querySelector(".toggle-btn span").textContent = nowSelected ? "Incluido en rutina" : "Agregar a rutina";
+        }
+      }
+
+      // Sincronizar otros compact cards si existen
+      document.querySelectorAll(`.compact-card[id$="-card-${key}"]`).forEach(c => {
+        c.classList.toggle("in-cart", nowSelected);
+        const b = c.querySelector('[data-action="toggle"]');
+        if (b) {
+          b.classList.toggle("added", nowSelected);
+          b.textContent = nowSelected ? "En pedido ✓" : "+ Agregar";
+        }
+      });
+
+      actualizarBarraCheckout();
+      if (nowSelected) {
+        showToast(`✓ Agregado al pedido: ${prod.titulo_comercial || prod.nombre}`, "success", 2000);
+      }
+    });
+
+    container.appendChild(card);
+  });
+}
+
+// -------------------------------------------------------------
+// RENDERIZADO DEL BANNER HERO DE OFERTAS FLASH
+// -------------------------------------------------------------
+function renderFlashBanner() {
+  const productosFlash = state.catalog.filter(p => getCategoryInfo(p).category !== "cuidado");
+  renderCompactCards(productosFlash, "flash-offers-grid");
+}
+
+// -------------------------------------------------------------
 // INICIALIZACIÓN
 // -------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
@@ -284,6 +443,7 @@ async function cargarCatalogo() {
   // Restaurar carrito y sincronizar barra
   loadCartFromStorage();
   actualizarBarraCheckout();
+  renderFlashBanner();
 }
 
 // -------------------------------------------------------------
@@ -353,6 +513,15 @@ function bindEvents() {
       renderCatalogo();
       const input = document.getElementById("catalog-search-input");
       if (input) input.focus();
+    });
+  }
+
+  // Banner Flash -> Ver Catálogo Completo
+  const btnVerCatalogo = document.getElementById("btn-ver-catalogo-completo");
+  if (btnVerCatalogo) {
+    btnVerCatalogo.addEventListener("click", () => {
+      showScreen("screen-catalog");
+      renderCatalogo();
     });
   }
 
@@ -825,6 +994,32 @@ function renderResultados() {
     container.appendChild(card);
   });
 
+  // Eliminar sección complementaria previa si ya existía
+  const prevComp = document.getElementById("complementary-offers");
+  if (prevComp) prevComp.remove();
+
+  // Productos complementarios (estilismo + complemento + para-ellos)
+  const productosComplementarios = state.catalog.filter(p => {
+    const cat = getCategoryInfo(p).category;
+    return (cat === "estilismo" || cat === "complemento" || cat === "para-ellos");
+  });
+
+  if (productosComplementarios.length > 0) {
+    const compSection = document.createElement("section");
+    compSection.id = "complementary-offers";
+    compSection.className = "complementary-section";
+    compSection.innerHTML = `
+      <div class="comp-header">
+        <span class="comp-badge">🌟 TAMBIÉN DISPONIBLE</span>
+        <h3 class="comp-title">Complementa tu Rutina</h3>
+        <p class="comp-sub">Estilismo profesional y tratamientos técnicos en liquidación</p>
+      </div>
+      <div class="comp-grid" id="complementary-grid"></div>
+    `;
+    container.after(compSection);
+    renderCompactCards(productosComplementarios, "complementary-grid");
+  }
+
   actualizarBarraCheckout();
 }
 
@@ -869,20 +1064,25 @@ function renderCatalogo() {
   const filtrados = state.catalog.filter(prod => {
     // 1. Filtro por Categoría
     if (filter !== "all") {
-      const nombreNorm = normalizarTexto(prod.nombre + " " + (prod.titulo_comercial || ""));
-      const pasoNorm = normalizarTexto(prod.paso || "");
-      if (filter === "shampoo") {
-        if (!nombreNorm.includes("shampoo") && !pasoNorm.includes("shampoo")) return false;
-      } else if (filter === "acondicionador") {
-        if (!nombreNorm.includes("acondicionador") && !pasoNorm.includes("acondicionador") && !nombreNorm.includes("aco_")) return false;
-      } else if (filter === "mascara") {
-        if (!nombreNorm.includes("mascara") && !pasoNorm.includes("mascara")) return false;
-      } else if (filter === "tratamiento") {
-        const esTratamiento = nombreNorm.includes("aceite") || nombreNorm.includes("serum") || nombreNorm.includes("crema") || nombreNorm.includes("ampolla") || nombreNorm.includes("pro-fiber") || nombreNorm.includes("re-create") || nombreNorm.includes("reconstruct") || nombreNorm.includes("step-3");
-        if (!esTratamiento) return false;
-      } else if (filter === "peinado") {
-        const esPeinado = nombreNorm.includes("spray") || nombreNorm.includes("gel") || nombreNorm.includes("laca") || nombreNorm.includes("fijacion") || nombreNorm.includes("infinium") || nombreNorm.includes("tecni");
-        if (!esPeinado) return false;
+      const cat = getCategoryInfo(prod).category;
+      if (["estilismo", "complemento", "para-ellos"].includes(filter)) {
+        if (cat !== filter) return false;
+      } else {
+        const nombreNorm = normalizarTexto(prod.nombre + " " + (prod.titulo_comercial || ""));
+        const pasoNorm = normalizarTexto(prod.paso || "");
+        if (filter === "shampoo") {
+          if (!nombreNorm.includes("shampoo") && !pasoNorm.includes("shampoo")) return false;
+        } else if (filter === "acondicionador") {
+          if (!nombreNorm.includes("acondicionador") && !pasoNorm.includes("acondicionador") && !nombreNorm.includes("aco_")) return false;
+        } else if (filter === "mascara") {
+          if (!nombreNorm.includes("mascara") && !pasoNorm.includes("mascara")) return false;
+        } else if (filter === "tratamiento") {
+          const esTratamiento = nombreNorm.includes("aceite") || nombreNorm.includes("serum") || nombreNorm.includes("crema") || nombreNorm.includes("ampolla") || nombreNorm.includes("pro-fiber") || nombreNorm.includes("re-create") || nombreNorm.includes("reconstruct") || nombreNorm.includes("step-3");
+          if (!esTratamiento) return false;
+        } else if (filter === "peinado") {
+          const esPeinado = nombreNorm.includes("spray") || nombreNorm.includes("gel") || nombreNorm.includes("laca") || nombreNorm.includes("fijacion") || nombreNorm.includes("infinium") || nombreNorm.includes("tecni");
+          if (!esPeinado) return false;
+        }
       }
     }
 
@@ -939,6 +1139,14 @@ function renderCatalogo() {
       stockBadgeHtml = `<span class="badge-scarcity limited">✓ Stock: ${prod.stock} un.</span>`;
     }
 
+    const catInfo = getCategoryInfo(prod);
+    const badgeHTML = catInfo.badge
+      ? `<span class="product-category-badge" style="background:${catInfo.color}20; color:${catInfo.color}; border:1px solid ${catInfo.color}40;">${catInfo.badge}</span>`
+      : "";
+    const tipHTML = catInfo.tip
+      ? `<small class="product-category-tip">${catInfo.tip}</small>`
+      : "";
+
     card.innerHTML = `
       <div class="routine-step-tag">
         <span class="step-label">${prod.linea.toUpperCase()}</span>
@@ -951,8 +1159,10 @@ function renderCatalogo() {
         </div>
         <div class="product-info">
           <div class="title-wrap" data-action="details" data-key="${key}">
+            ${badgeHTML}
             <h4 class="product-name">${prod.titulo_comercial || prod.nombre}</h4>
             <span class="product-format">Línea: ${prod.linea} • Formato: ${prod.formato}</span>
+            ${tipHTML}
           </div>
 
           <div class="badges-wrap">
@@ -1184,6 +1394,15 @@ function abrirModal(prod, key) {
         stCat.style.pointerEvents = "auto";
       }
     }
+
+    // Sincronizar compact cards si existen
+    document.querySelectorAll(`.compact-action-btn[data-key="${key}"]`).forEach(btn => {
+      btn.textContent = "En pedido ✓";
+      btn.classList.add("added");
+    });
+    document.querySelectorAll(`.compact-card[id$="-card-${key}"]`).forEach(c => {
+      c.classList.add("in-cart");
+    });
 
     actualizarBarraCheckout();
     showToast(`✓ Agregado al pedido: ${prod.titulo_comercial || prod.nombre}`, "success", 2500);
