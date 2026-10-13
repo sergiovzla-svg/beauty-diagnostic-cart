@@ -1,0 +1,39 @@
+# =====================================================================
+# GITIGNORE: Protección y Privacidad del Negocio
+# =====================================================================
+
+# 1. PLANILLAS MAESTRAS DE INVENTARIO Y COSTOS (CONFIDENCIAL)
+# Protege costos de compra, márgenes de ganancia y conteos físicos
+/data/
+*.xlsx
+*.xls
+*.csv
+*.lnk
+
+# 2. CREDENCIALES Y VARIABLES DE ENTORNO
+# Claves de API (Gemini, Google, etc.) y teléfonos personales
+.env
+.env.*
+!.env.example
+
+# 3. DATOS DE CLIENTES
+clientes/
+
+# 4. FOTOS EN BRUTO DE CÁMARA (ARCHIVOS PESADOS DE +200 MB)
+input_images/
+
+# 5. CARPETAS TEMPORALES Y CACHÉ
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.tmp*
+*.tmp
+scratch/
+
+# 6. SISTEMAS OPERATIVOS Y EDITORES
+.DS_Store
+Thumbs.db
+ehthumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,18 @@
+/*
+  # Previene clickjacking (incrustar el sitio en un iframe malicioso)
+  X-Frame-Options: SAMEORIGIN
+
+  # Evita que el navegador "adivine" tipos de archivo (MIME sniffing)
+  X-Content-Type-Options: nosniff
+
+  # Controla información que se envía al salir del sitio
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Bloquea acceso a cámara, micrófono, geolocalización, etc.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+  # Content Security Policy: permite recursos legítimos del sitio
+  # - fonts.googleapis.com / fonts.gstatic.com: tipografías Google
+  # - wa.me / api.whatsapp.com: links de WhatsApp
+  # - 'unsafe-inline': necesario para estilos inline del app
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none';

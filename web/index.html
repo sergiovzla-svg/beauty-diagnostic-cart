@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport sin user-scalable=no para cumplir accesibilidad y Core Web Vitals -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liquidación Productos L'Oréal | Diagnóstico Capilar Profesional</title>
+  <meta name="description" content="Liquidación de productos L'Oréal Professionnel en Santiago. Diagnóstico capilar personalizado y catálogo completo de 62 productos. Pide directo por WhatsApp.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://liquidacion-productos-loreal.netlify.app/">
+
+  <!-- Open Graph (vista previa en WhatsApp, Facebook, Instagram) -->
+  <meta property="og:site_name" content="Liquidación L'Oréal">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://liquidacion-productos-loreal.netlify.app/">
+  <meta property="og:title" content="Liquidación L'Oréal Professionnel | Diagnóstico Capilar + Catálogo">
+  <meta property="og:description" content="62 productos L'Oréal Professionnel en stock. Haz tu diagnóstico capilar online y pide tu rutina personalizada directo por WhatsApp desde Santiago de Chile.">
+  <meta property="og:image" content="https://liquidacion-productos-loreal.netlify.app/og-preview.jpg?v=2">
+  <meta property="og:image:secure_url" content="https://liquidacion-productos-loreal.netlify.app/og-preview.jpg?v=2">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="es_CL">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Liquidación L'Oréal Professionnel | Diagnóstico Capilar + Catálogo">
+  <meta name="twitter:description" content="62 productos L'Oréal en stock. Diagnóstico capilar personalizado y pedidos directo por WhatsApp.">
+  <meta name="twitter:image" content="https://liquidacion-productos-loreal.netlify.app/og-preview.jpg?v=2">
+
+  <!-- Tipografías de Alta Gama -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    
+    <!-- HEADER DE MARCA -->
+    <header class="luxury-header">
+      <div class="brand-badge">LIQUIDACIÓN EXCLUSIVA</div>
+      <h1 class="brand-title">L'ORÉAL</h1>
+      <p class="brand-sub">PROFESSIONNEL</p>
+      <div class="brand-divider"></div>
+    </header>
+
+    <!-- NAVEGACIÓN PRINCIPAL (TABS) -->
+    <nav class="main-nav-tabs" role="tablist">
+      <button id="tab-nav-quiz" class="nav-tab-btn active" type="button" role="tab" aria-selected="true">
+        <span class="tab-icon">💆</span>
+        <span>Diagnóstico Capilar</span>
+      </button>
+      <button id="tab-nav-catalog" class="nav-tab-btn" type="button" role="tab" aria-selected="false">
+        <span class="tab-icon">🛍️</span>
+        <span>Catálogo & Buscador</span>
+        <span id="nav-catalog-badge" class="nav-badge">62</span>
+      </button>
+    </nav>
+
+    <!-- PANTALLA 1: BIENVENIDA / HERO -->
+    <section id="screen-intro" class="screen active">
+      <div class="hero-content">
+        <span class="luxury-tag">LIQUIDACIÓN PRODUCTOS L'ORÉAL</span>
+        <h2 class="hero-headline">Tu cabello revela una historia única. Descubre tu rutina exacta.</h2>
+        <p class="hero-text">
+          Responde 4 preguntas breves para formular tu tratamiento personalizado de salón con stock oficial garantizado en Santiago de Chile.
+        </p>
+
+        <div class="hero-features">
+          <div class="feature-item">
+            <span class="feature-icon">✨</span>
+            <div class="feature-text">
+              <strong>Fórmulas Profesionales</strong>
+              <small>Serie Expert & tratamientos activos</small>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📦</span>
+            <div class="feature-text">
+              <strong>Stock en Tiempo Real</strong>
+              <small>Unidades limitadas para entrega inmediata</small>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">💬</span>
+            <div class="feature-text">
+              <strong>Pedido Directo WhatsApp</strong>
+              <small>Reserva confirmada con atención personalizada</small>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-start-quiz" class="btn-primary" type="button">
+          Comenzar Diagnóstico
+          <span class="arrow-icon">→</span>
+        </button>
+
+        <div class="intro-secondary-action">
+          <span class="divider-text">— o si ya sabes qué buscas —</span>
+          <button id="btn-goto-catalog" class="btn-secondary-catalog" type="button">
+            <span>🔍 Buscar en Catálogo Completo (62 productos)</span>
+            <span class="arrow-icon">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 2: CUESTIONARIO GUIADO -->
+    <section id="screen-quiz" class="screen">
+      <!-- Barra de Progreso Superior -->
+      <div class="quiz-nav">
+        <button id="btn-quiz-prev" class="btn-back" type="button" aria-label="Volver">←</button>
+        <div class="progress-wrap">
+          <div class="progress-bar-bg">
+            <div id="quiz-progress-fill" class="progress-bar-fill"></div>
+          </div>
+          <span id="quiz-step-indicator" class="step-indicator">Paso 1 de 4</span>
+        </div>
+      </div>
+
+      <!-- Pregunta Dinámica -->
+      <div class="quiz-body">
+        <span id="question-category" class="question-pill">ANÁLISIS DE FIBRA</span>
+        <h3 id="question-title" class="question-title">¿Cuál es el patrón natural de tu cabello?</h3>
+        <p id="question-subtitle" class="question-subtitle">Selecciona la textura que mejor describe tu hebra capilar.</p>
+
+        <!-- Opciones Renderizadas por JS -->
+        <div id="options-container" class="options-grid"></div>
+      </div>
+
+      <!-- Footer del Quiz -->
+      <div class="quiz-actions">
+        <button id="btn-quiz-next" class="btn-primary" type="button" disabled>
+          Continuar
+          <span class="arrow-icon">→</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 3: CARGA / DIAGNÓSTICO EN CURSO -->
+    <section id="screen-loading" class="screen">
+      <div class="diagnostic-spinner-wrap">
+        <div class="spinner-gold"></div>
+        <h3 class="loading-title">Formulando tu Rutina de Salón</h3>
+        <p class="loading-sub">Cruzando tu perfil capilar con las fórmulas activas en bodega...</p>
+        <div class="loading-checks">
+          <div class="check-row" id="check-1">✓ Densidad y textura analizadas</div>
+          <div class="check-row" id="check-2">✓ Nivel de reparación verificado</div>
+          <div class="check-row" id="check-3">✓ Unidades de stock sincronizadas</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 4: RESULTADOS / RUTINA & CHECKOUT -->
+    <section id="screen-results" class="screen">
+      <div class="results-header">
+        <div class="profile-badge">
+          <span class="badge-icon">🌿</span>
+          <span id="profile-summary-text">Rutina Recomendada para ti</span>
+        </div>
+        <h2 class="results-title">Tu Protocolo Profesional</h2>
+        <p class="results-desc">
+          Fórmula diseñada para reparar, proteger y sublimar tu fibra capilar. Selecciona las cantidades deseadas y confirma tu orden directa.
+        </p>
+      </div>
+
+      <!-- Lista de Productos Recomendados -->
+      <div id="products-list" class="products-stack">
+        <!-- Renderizado dinámico desde app.js -->
+      </div>
+
+      <!-- Beneficios de Compra -->
+      <div class="guarantee-box">
+        <div class="guarantee-item">
+          <span>🛡️</span>
+          <p><strong>100% Original L'Oréal:</strong> Producto profesional sellado.</p>
+        </div>
+        <div class="guarantee-item">
+          <span>⚡</span>
+          <p><strong>Entrega Inmediata:</strong> Despacho o retiro coordinado directo por WhatsApp.</p>
+        </div>
+      </div>
+
+      <!-- Botón para Agregar más productos desde el catálogo -->
+      <div class="results-extra-actions">
+        <button id="btn-results-add-more" class="btn-secondary-catalog" type="button">
+          <span>🔍 + Sumar otro producto del catálogo al pedido</span>
+        </button>
+      </div>
+
+      <!-- Botón para Reiniciar Diagnóstico -->
+      <div class="reset-wrap">
+        <button id="btn-restart-quiz" class="btn-text" type="button">↻ Realizar nuevo diagnóstico</button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 5: CATÁLOGO DIRECTO Y BUSCADOR EN TIEMPO REAL -->
+    <section id="screen-catalog" class="screen">
+      <div class="catalog-header-wrap">
+        <div class="catalog-title-row">
+          <span class="luxury-tag">STOCK OFICIAL EN BODEGA</span>
+          <h2 class="catalog-title">Catálogo Completo</h2>
+          <p class="catalog-desc">Escribe una palabra clave o selecciona una categoría para encontrar tu producto ideal.</p>
+        </div>
+
+        <!-- Buscador instantáneo -->
+        <div class="search-bar-container">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="catalog-search-input" placeholder="Buscar: Inforcer, Absolut, Vitamino, Shampoo..." autocomplete="off">
+            <button id="btn-clear-search" class="clear-search-btn hidden" type="button" aria-label="Limpiar búsqueda">✕</button>
+          </div>
+        </div>
+
+        <!-- Filtros Rápidos por Categoría -->
+        <div class="filter-pills-wrap">
+          <button class="filter-pill active" data-filter="all">Todos (62)</button>
+          <button class="filter-pill" data-filter="shampoo">Shampoos</button>
+          <button class="filter-pill" data-filter="acondicionador">Acondicionadores</button>
+          <button class="filter-pill" data-filter="mascara">Máscaras</button>
+          <button class="filter-pill" data-filter="tratamiento">Tratamientos / Aceites</button>
+          <button class="filter-pill" data-filter="peinado">Fijación / Sprays</button>
+        </div>
+
+        <div class="catalog-results-meta">
+          <span id="catalog-count-text">Mostrando 62 productos</span>
+        </div>
+      </div>
+
+      <!-- Grilla de productos del catálogo -->
+      <div id="catalog-products-list" class="catalog-stack">
+        <!-- Renderizado dinámicamente desde app.js -->
+      </div>
+    </section>
+
+    <!-- BARRA FLOTANTE FIJA INFERIOR (STICKY CHECKOUT BAR) -->
+    <div id="sticky-cart-bar" class="sticky-cart hidden">
+      <div class="sticky-inner">
+        <div class="cart-summary">
+          <span id="cart-items-count" class="cart-count">0 productos seleccionados</span>
+          <div class="cart-total-wrap">
+            <span class="cart-total-label">Total a pagar:</span>
+            <span id="cart-total-price" class="cart-price">$0 CLP</span>
+          </div>
+        </div>
+        <button id="btn-whatsapp-checkout" class="btn-whatsapp" type="button">
+          <span class="whatsapp-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.031 2C6.495 2 2 6.492 2 12.028c0 1.769.46 3.498 1.332 5.018L2 22l5.127-1.344a10.007 10.007 0 004.904 1.282h.004c5.536 0 10.03-4.493 10.03-10.03C22.065 6.492 17.568 2 12.031 2zm0 18.358h-.004a8.318 8.318 0 01-4.24-1.162l-.304-.18-3.155.827.842-3.076-.198-.315a8.32 8.32 0 01-1.277-4.424c0-4.606 3.748-8.354 8.357-8.354 4.608 0 8.356 3.748 8.356 8.354 0 4.606-3.748 8.354-8.38 8.354zm4.582-6.257c-.251-.126-1.488-.734-1.718-.818-.23-.084-.397-.126-.564.126-.168.252-.649.818-.795.986-.147.168-.293.189-.544.063-.251-.126-1.06-.391-2.02-1.246-.746-.666-1.25-1.489-1.396-1.741-.147-.252-.016-.388.11-.513.113-.113.251-.294.377-.441.125-.147.167-.252.251-.42.084-.168.042-.315-.021-.441-.063-.126-.565-1.365-.774-1.869-.204-.492-.41-.425-.564-.433-.146-.008-.314-.01-.481-.01-.168 0-.44.063-.67.315-.23.252-.879.86-.879 2.097 0 1.237.9 2.433 1.026 2.601.125.168 1.77 2.703 4.288 3.791.6.259 1.068.413 1.433.529.602.191 1.15.164 1.583.1.483-.072 1.488-.608 1.697-1.196.21-.588.21-1.092.147-1.197-.063-.105-.23-.168-.481-.294z"/>
+            </svg>
+          </span>
+          <span class="btn-text-content">Pedir por WhatsApp</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MODAL ELEGANTE DE DETALLES DEL PRODUCTO -->
+    <div id="product-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <button id="btn-close-modal" class="btn-modal-close" type="button" aria-label="Cerrar modal">✕</button>
+        <div class="modal-header">
+          <div class="modal-img-wrap">
+            <img id="modal-img" src="" alt="Producto">
+          </div>
+          <div class="modal-meta">
+            <span id="modal-line" class="product-line-badge"></span>
+            <h3 id="modal-title" class="modal-title"></h3>
+            <span id="modal-format" class="modal-format"></span>
+            <div class="modal-pricing">
+              <span id="modal-price" class="product-price"></span>
+              <span id="modal-market-range" class="modal-range"></span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="modal-section">
+            <h4>Descripción & Beneficios</h4>
+            <p id="modal-description" class="modal-text"></p>
+          </div>
+          <div class="modal-section" id="modal-usage-section">
+            <h4>Modo de Uso Profesional</h4>
+            <p id="modal-usage" class="modal-text"></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-modal-add" class="btn-primary" type="button">Incluir en mi Pedido</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Catálogo de Productos (Soporta ejecución directa local offline y servidor) -->
+  <script src="data/productos.js?v=3"></script>
+  <script src="app.js?v=3"></script>
+</body>
+</html>
