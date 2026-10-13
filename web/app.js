@@ -138,6 +138,7 @@ const QUIZ_QUESTIONS = [
 const state = {
   currentScreen: "screen-intro",
   currentQuestionIndex: 0,
+  customerName: "",
   answers: {
     patron: null,
     raiz: null,
@@ -150,6 +151,95 @@ const state = {
   catalogFilter: "all",
   catalogSearchTerm: ""
 };
+
+// -------------------------------------------------------------
+// NOTIFICACIONES TOAST LUXURY (FEEDBACK ELEGANTE)
+// -------------------------------------------------------------
+function showToast(mensaje, tipo = "warning", duration = 3500) {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `luxury-toast toast-${tipo}`;
+
+  let icon = "⚠️";
+  if (tipo === "success") icon = "✨";
+  if (tipo === "info") icon = "ℹ️";
+
+  toast.innerHTML = `
+    <span class="toast-icon">${icon}</span>
+    <span class="toast-message">${mensaje}</span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("hide");
+    setTimeout(() => toast.remove(), 280);
+  }, duration);
+}
+
+// -------------------------------------------------------------
+// PERSISTENCIA EN LOCALSTORAGE (CARRITO Y PERFIL)
+// -------------------------------------------------------------
+function saveCartToStorage() {
+  try {
+    const toSave = {};
+    Object.entries(state.cart).forEach(([key, item]) => {
+      if (item && item.product) {
+        toSave[key] = {
+          id: item.product.id,
+          formato: item.product.formato,
+          quantity: item.quantity,
+          selected: item.selected
+        };
+      }
+    });
+    localStorage.setItem("loreal_cart_v1", JSON.stringify(toSave));
+    if (state.customerName) {
+      localStorage.setItem("loreal_customer_name", state.customerName);
+    }
+    if (state.answers && Object.values(state.answers).some(Boolean)) {
+      localStorage.setItem("loreal_quiz_answers", JSON.stringify(state.answers));
+    }
+  } catch (e) {
+    console.warn("No se pudo guardar el carrito en almacenamiento local:", e);
+  }
+}
+
+function loadCartFromStorage() {
+  try {
+    const savedName = localStorage.getItem("loreal_customer_name");
+    if (savedName) state.customerName = savedName;
+
+    const savedAnswers = localStorage.getItem("loreal_quiz_answers");
+    if (savedAnswers) {
+      try {
+        state.answers = JSON.parse(savedAnswers);
+      } catch (err) {}
+    }
+
+    const savedCart = localStorage.getItem("loreal_cart_v1");
+    if (savedCart) {
+      const parsed = JSON.parse(savedCart);
+      state.cart = {};
+      Object.entries(parsed).forEach(([key, item]) => {
+        const prod = state.catalog.find(p => p.id === item.id && p.formato === item.formato)
+                  || state.catalog.find(p => p.id === item.id);
+        if (prod && prod.stock > 0) {
+          const qty = Math.min(Math.max(1, item.quantity || 1), prod.stock);
+          state.cart[key] = {
+            product: prod,
+            quantity: qty,
+            selected: item.selected !== false
+          };
+        }
+      });
+    }
+  } catch (e) {
+    console.warn("No se pudo restaurar el carrito:", e);
+  }
+}
 
 // -------------------------------------------------------------
 // FORMATEO DE MONEDA CHILENA (CLP)
@@ -190,6 +280,10 @@ async function cargarCatalogo() {
   if (badge) badge.textContent = state.catalog.length;
   const countEl = document.getElementById("catalog-count-text");
   if (countEl) countEl.textContent = `Mostrando ${state.catalog.length} productos`;
+
+  // Restaurar carrito y sincronizar barra
+  loadCartFromStorage();
+  actualizarBarraCheckout();
 }
 
 // -------------------------------------------------------------
@@ -339,6 +433,10 @@ function bindEvents() {
   // Reiniciar Diagnóstico
   document.getElementById("btn-restart-quiz").addEventListener("click", () => {
     state.answers = { patron: null, raiz: null, quimico: null, objetivo: null };
+    try {
+      localStorage.removeItem("loreal_quiz_answers");
+    } catch (e) {}
+    showToast("Diagnóstico reiniciado. Puedes volver a completarlo cuando desees.", "info", 2500);
     showScreen("screen-intro");
   });
 
@@ -347,6 +445,40 @@ function bindEvents() {
   document.getElementById("product-modal").addEventListener("click", (e) => {
     if (e.target.id === "product-modal") cerrarModal();
   });
+
+  // Modal de Nombre Checkout (WhatsApp)
+  const btnCloseNameModal = document.getElementById("btn-close-name-modal");
+  if (btnCloseNameModal) btnCloseNameModal.addEventListener("click", cerrarModalNombre);
+
+  const nameModalBackdrop = document.getElementById("checkout-name-modal");
+  if (nameModalBackdrop) {
+    nameModalBackdrop.addEventListener("click", (e) => {
+      if (e.target.id === "checkout-name-modal") cerrarModalNombre();
+    });
+  }
+
+  const btnConfirmName = document.getElementById("btn-confirm-name-whatsapp");
+  const nameInput = document.getElementById("customer-name-input");
+  if (btnConfirmName && nameInput) {
+    btnConfirmName.addEventListener("click", () => {
+      confirmarNombreYPedir(nameInput.value);
+    });
+
+    nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        confirmarNombreYPedir(nameInput.value);
+      }
+    });
+  }
+
+  const btnSkipName = document.getElementById("btn-skip-name");
+  if (btnSkipName) {
+    btnSkipName.addEventListener("click", () => {
+      cerrarModalNombre();
+      ejecutarCheckoutWhatsApp("");
+    });
+  }
 
   // Botón WhatsApp Checkout
   document.getElementById("btn-whatsapp-checkout").addEventListener("click", enviarPedidoWhatsApp);
@@ -444,55 +576,133 @@ function iniciarDiagnostico() {
 // CÁLCULO DE RUTINA PERSONALIZADA
 // -------------------------------------------------------------
 function calcularRecomendaciones() {
-  const { patron, quimico, objetivo } = state.answers;
+  const { patron, raiz, quimico, objetivo } = state.answers;
   const items = [];
 
-  // Paso 1: Selección inteligente del Shampoo
-  let shampooId = "LOR-0004"; // Default: Absolut Repair Quinoa
-  if (quimico === "decolorado" || objetivo === "color_brillo") {
-    // Si tiene mechas/decoloración o busca realzar rubios -> Blondifier o Vitamino
-    const blondifier = state.catalog.find(p => p.id === "LOR-0068" && p.nombre.includes("Blondifier"));
-    if (blondifier && quimico === "decolorado") {
-      shampooId = "LOR-0068_BLOND";
-    } else {
-      shampooId = "LOR-0003"; // Vitamino Color Resveratrol
+  // Puntuación de afinidad según diagnóstico, tipo de paso y stock real
+  function puntuarProducto(prod, tipoPaso, lineaSeleccionada) {
+    if (!prod || (prod.stock !== undefined && prod.stock <= 0)) return -999;
+
+    let score = 0;
+    const paso = prod.paso || "";
+    const necesidad = prod.necesidad || "";
+    const nombre = (prod.nombre || "") + " " + (prod.titulo_comercial || "");
+    const linea = prod.linea || "";
+    const patrones = Array.isArray(prod.patron) ? prod.patron : [];
+    const raices = Array.isArray(prod.raiz) ? prod.raiz : [];
+    const quimicos = Array.isArray(prod.quimico) ? prod.quimico : [];
+
+    // 1. Filtro estricto por paso de la rutina
+    if (tipoPaso === "shampoo") {
+      if (!paso.includes("Shampoo")) return -999;
+    } else if (tipoPaso === "acondicionador") {
+      if (!paso.includes("Acondicionador")) return -999;
+    } else if (tipoPaso === "mascara") {
+      const esMascara = paso.includes("Máscara") || paso.includes("Mscara") || paso.includes("Tratamiento");
+      if (!esMascara) return -999;
+    } else if (tipoPaso === "finalizador") {
+      const esFinalizador = paso.includes("Leave-in") || paso.includes("Crema") || paso.includes("Acabado") || paso.includes("Sérum") || paso.includes("Srum") || paso.includes("Aceite") || paso.includes("Spray");
+      if (!esFinalizador) return -999;
     }
-  } else if (quimico === "tinturado") {
-    shampooId = "LOR-0003"; // Vitamino Color Resveratrol
+
+    // 2. Objetivo Principal del Cliente (Mayor ponderación)
+    if (objetivo === "reparacion") {
+      if (necesidad.includes("Reparación") || necesidad.includes("Daño") || necesidad.includes("Nutrición")) score += 10;
+      if (linea.includes("Absolut") || linea.includes("Pro Fiber") || linea.includes("Smartbond")) score += 8;
+    } else if (objetivo === "color_brillo") {
+      if (necesidad.includes("Color") || necesidad.includes("Rubios") || necesidad.includes("Brillo") || necesidad.includes("Decolorados")) score += 10;
+      if (linea.includes("Vitamino") || linea.includes("Blondifier") || linea.includes("Mythic")) score += 8;
+    } else if (objetivo === "fuerza_resistencia") {
+      if (necesidad.includes("Anti-Quiebre") || necesidad.includes("Fuerza") || necesidad.includes("Densidad") || necesidad.includes("Enlaces")) score += 10;
+      if (linea.includes("Inforcer") || linea.includes("Serioxyl") || linea.includes("Pro Fiber")) score += 8;
+    }
+
+    // 3. Procesos Químicos y Tratamiento de Color
+    if (quimico === "decolorado") {
+      if (quimicos.includes("Decolorado") || quimicos.includes("Mechas") || quimicos.includes("Canas") || linea.includes("Blondifier") || necesidad.includes("Rubios")) score += 9;
+    } else if (quimico === "tinturado") {
+      if (quimicos.includes("Tinturado") || linea.includes("Vitamino") || necesidad.includes("Color")) score += 9;
+    } else if (quimico === "danado_calor") {
+      if (quimicos.includes("Dañado") || quimicos.includes("Procesado") || necesidad.includes("Reparación")) score += 7;
+    } else if (quimico === "natural") {
+      if (quimicos.includes("Natural") || quimicos.includes("Todos") || necesidad.includes("Nutrición")) score += 5;
+    }
+
+    // 4. Patrón y Textura de la Fibra Capilar
+    if (patron === "rizado") {
+      if (patrones.includes("Rizado") || necesidad.includes("Rizos") || nombre.toLowerCase().includes("curl")) score += 8;
+      else if (patrones.includes("Todos")) score += 2;
+    } else if (patron === "ondulado") {
+      if (patrones.includes("Ondulado") || necesidad.includes("Frizz") || nombre.toLowerCase().includes("waves")) score += 6;
+      else if (patrones.includes("Todos")) score += 2;
+    } else if (patron === "liso") {
+      if (patrones.includes("Liso") || linea.includes("Liss")) score += 6;
+      else if (patrones.includes("Todos")) score += 2;
+    }
+
+    // 5. Estado de la Raíz / Cuero Cabelludo (relevante para lavado y balance)
+    if (raiz === "grasa") {
+      if (raices.includes("Graso") || necesidad.includes("Purificante")) score += 8;
+    } else if (raiz === "seca") {
+      if (necesidad.includes("Nutrición") || raices.includes("Normal")) score += 4;
+    }
+
+    // 6. Sinergia de Línea (cohesión con la línea principal de tratamiento)
+    if (lineaSeleccionada && linea.toLowerCase().includes(lineaSeleccionada.toLowerCase())) {
+      score += 3;
+    }
+
+    // 7. Factor de rotación de stock (prioriza productos con stock disponible más holgado)
+    score += Math.min(prod.stock || 0, 5) * 0.2;
+
+    return score;
   }
 
-  // Buscar productos en el catálogo
-  const shampoo = state.catalog.find(p => {
-    if (shampooId === "LOR-0068_BLOND") return p.id === "LOR-0068" && p.nombre.includes("Blondifier");
-    return p.id === shampooId;
-  }) || state.catalog.find(p => p.paso.includes("Shampoo"));
+  function seleccionarMejorProducto(tipoPaso, lineaSeleccionada) {
+    const candidatos = state.catalog
+      .filter(p => (p.stock || 0) > 0)
+      .map(p => ({ prod: p, score: puntuarProducto(p, tipoPaso, lineaSeleccionada) }))
+      .filter(item => item.score > -900)
+      .sort((a, b) => b.score - a.score);
 
-  // Paso 2: Acondicionador Inforcer B6 + Biotin
-  const acondicionador = state.catalog.find(p => p.id === "LOR-0005") || state.catalog.find(p => p.paso.includes("Acondicionador"));
+    return candidatos.length > 0 ? candidatos[0].prod : null;
+  }
 
-  // Paso 3: Máscara Absolut Repair Quinoa
-  const mascara = state.catalog.find(p => p.id === "LOR-0021") || state.catalog.find(p => p.paso.includes("Máscara"));
+  // Paso 1: Shampoo ideal
+  const shampoo = seleccionarMejorProducto("shampoo", null);
+  const lineaPrincipal = shampoo ? shampoo.linea : null;
 
-  // Paso 4: Leave-in Spray 10 en 1 Absolut Repair
-  const leaveIn = state.catalog.find(p => p.id === "LOR-0068" && p.nombre.includes("Spray")) || state.catalog.find(p => p.paso.includes("Leave-in"));
+  // Paso 2: Acondicionador con sinergia
+  const acondicionador = seleccionarMejorProducto("acondicionador", lineaPrincipal);
+
+  // Paso 3: Máscara de Tratamiento Intensivo
+  const mascara = seleccionarMejorProducto("mascara", lineaPrincipal);
+
+  // Paso 4: Finalizador / Leave-in / Termoprotector
+  const finalizador = seleccionarMejorProducto("finalizador", lineaPrincipal);
 
   if (shampoo) items.push({ ...shampoo, rutinaStep: "Paso 1 • Limpieza & Preparación" });
-  if (acondicionador) items.push({ ...acondicionador, rutinaStep: "Paso 2 • Desenredo & Anti-Quiebre" });
+  if (acondicionador) items.push({ ...acondicionador, rutinaStep: "Paso 2 • Sellado Diario & Desenredo" });
   if (mascara) items.push({ ...mascara, rutinaStep: "Paso 3 • Reparación Intensiva Semanal" });
-  if (leaveIn) items.push({ ...leaveIn, rutinaStep: "Paso 4 • Termoprotección & Brillo" });
+  if (finalizador) items.push({ ...finalizador, rutinaStep: "Paso 4 • Termoprotección & Brillo Final" });
 
   state.recommendedProducts = items;
 
-  // Inicializar carrito con 1 unidad por cada producto recomendado
-  state.cart = {};
+  // Actualizar carrito sin sobreescribir productos seleccionados previamente
   items.forEach(p => {
     const key = p.id + "_" + p.formato;
-    state.cart[key] = {
-      product: p,
-      quantity: 1,
-      selected: true
-    };
+    if (!state.cart[key]) {
+      state.cart[key] = {
+        product: p,
+        quantity: 1,
+        selected: true
+      };
+    } else {
+      state.cart[key].selected = true;
+    }
   });
+
+  saveCartToStorage();
 }
 
 // -------------------------------------------------------------
@@ -890,12 +1100,16 @@ function actualizarBarraCheckout() {
 
   const stickyCart = document.getElementById("sticky-cart-bar");
   if (stickyCart) {
-    if (state.currentScreen === "screen-results" || (state.currentScreen === "screen-catalog" && totalProductos > 0)) {
+    const isDoingQuiz = state.currentScreen === "screen-quiz" || state.currentScreen === "screen-loading";
+    if (totalProductos > 0 && !isDoingQuiz) {
       stickyCart.classList.remove("hidden");
     } else {
       stickyCart.classList.add("hidden");
     }
   }
+
+  // Guardar estado persistente automáticamente
+  saveCartToStorage();
 }
 
 // -------------------------------------------------------------
@@ -972,6 +1186,7 @@ function abrirModal(prod, key) {
     }
 
     actualizarBarraCheckout();
+    showToast(`✓ Agregado al pedido: ${prod.titulo_comercial || prod.nombre}`, "success", 2500);
     cerrarModal();
   };
 
@@ -986,13 +1201,64 @@ function cerrarModal() {
 }
 
 // -------------------------------------------------------------
+// MODAL DE NOMBRE DE CLIENTE (CHECKOUT)
+// -------------------------------------------------------------
+function abrirModalNombre() {
+  const modal = document.getElementById("checkout-name-modal");
+  if (!modal) return;
+  const input = document.getElementById("customer-name-input");
+  if (input) {
+    input.value = state.customerName || localStorage.getItem("loreal_customer_name") || "";
+  }
+  modal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  setTimeout(() => {
+    if (input) input.focus();
+  }, 150);
+}
+
+function cerrarModalNombre() {
+  const modal = document.getElementById("checkout-name-modal");
+  if (modal) modal.classList.add("hidden");
+  document.body.style.overflow = "";
+}
+
+function confirmarNombreYPedir(nombre) {
+  const nombreLimpio = (nombre || "").trim();
+  if (nombreLimpio) {
+    state.customerName = nombreLimpio;
+    try {
+      localStorage.setItem("loreal_customer_name", nombreLimpio);
+    } catch (e) {}
+  }
+  cerrarModalNombre();
+  ejecutarCheckoutWhatsApp(state.customerName);
+}
+
+// -------------------------------------------------------------
 // CHECKOUT: ENVIAR PEDIDO POR WHATSAPP
 // -------------------------------------------------------------
 function enviarPedidoWhatsApp() {
   const itemsSeleccionados = Object.values(state.cart).filter(item => item.selected);
 
   if (itemsSeleccionados.length === 0) {
-    alert("Por favor selecciona al menos un producto para coordinar tu pedido.");
+    showToast("Por favor selecciona al menos un producto para coordinar tu pedido.", "warning");
+    return;
+  }
+
+  const nombreGuardado = (state.customerName || localStorage.getItem("loreal_customer_name") || "").trim();
+  if (!nombreGuardado) {
+    abrirModalNombre();
+  } else {
+    ejecutarCheckoutWhatsApp(nombreGuardado);
+  }
+}
+
+function ejecutarCheckoutWhatsApp(customerName) {
+  const itemsSeleccionados = Object.values(state.cart).filter(item => item.selected);
+
+  if (itemsSeleccionados.length === 0) {
+    showToast("Por favor selecciona al menos un producto para coordinar tu pedido.", "warning");
     return;
   }
 
@@ -1012,9 +1278,10 @@ function enviarPedidoWhatsApp() {
     ? `Textura: ${state.answers.patron || "Natural"} | Raíz: ${state.answers.raiz || "Normal"} | Proceso: ${state.answers.quimico || "Normal"}`
     : "Pedido directo desde Catálogo";
 
+  const saludoNombre = customerName ? `¡Hola! Soy *${customerName}*.\n` : "¡Hola!\n";
   const saludo = tieneDiagnostico
-    ? `¡Hola! Acabo de completar el diagnóstico capilar L'Oréal Professionnel en la web y me gustaría reservar los siguientes productos de mi rutina:`
-    : `¡Hola! Estuve revisando el catálogo online de L'Oréal Professionnel y me gustaría reservar los siguientes productos:`;
+    ? `${saludoNombre}Acabo de completar el diagnóstico capilar L'Oréal Professionnel en la web y me gustaría reservar los siguientes productos de mi rutina:`
+    : `${saludoNombre}Estuve revisando el catálogo online de L'Oréal Professionnel y me gustaría reservar los siguientes productos:`;
 
   const mensaje =
     `${saludo}
@@ -1029,6 +1296,8 @@ ${lineasProductos}
 
   const phone = CONFIG.WHATSAPP_PHONE.replace(/\D/g, "");
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
+
+  showToast("Conectando con WhatsApp para confirmar tu reserva...", "success", 3000);
 
   // Abrir WhatsApp en nueva pestaña o aplicación nativa del teléfono
   window.open(url, "_blank");

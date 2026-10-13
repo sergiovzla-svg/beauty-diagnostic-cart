@@ -1320,3 +1320,185 @@ body {
   font-size: 0.84rem;
 }
 
+/* -------------------------------------------------------------
+   MODAL DE CONFIRMACIÓN DE NOMBRE (CHECKOUT WHATSAPP)
+   ------------------------------------------------------------- */
+.modal-card-sm {
+  max-width: 440px;
+  gap: 18px;
+  text-align: center;
+}
+
+.name-modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.name-modal-icon {
+  font-size: 2.2rem;
+  margin-bottom: 2px;
+}
+
+.name-modal-header .modal-title {
+  font-size: 1.25rem;
+  font-family: var(--font-serif);
+  color: var(--gold-light);
+}
+
+.name-modal-header .modal-sub {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.name-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.name-input-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.name-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+
+.name-input-wrapper:focus-within {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 16px var(--gold-glow);
+}
+
+.input-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+#customer-name-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
+
+#customer-name-input::placeholder {
+  color: var(--text-muted);
+}
+
+.name-modal-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.w-100 {
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-text-skip {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 6px;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+  font-family: var(--font-sans);
+}
+
+.btn-text-skip:hover {
+  color: var(--text-secondary);
+}
+
+/* -------------------------------------------------------------
+   NOTIFICACIONES TOAST LUXURY (REEMPLAZO DE ALERT)
+   ------------------------------------------------------------- */
+.toast-container {
+  position: fixed;
+  bottom: 95px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  max-width: 440px;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.luxury-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(21, 21, 25, 0.96);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 18px var(--gold-glow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.luxury-toast.toast-warning {
+  border-color: rgba(255, 180, 0, 0.5);
+}
+
+.luxury-toast.toast-success {
+  border-color: rgba(37, 211, 102, 0.5);
+}
+
+.toast-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.toast-message {
+  flex: 1;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.luxury-toast.hide {
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+}
+
