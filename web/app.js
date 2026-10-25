@@ -511,8 +511,6 @@ function bindEvents() {
     btnGotoCatalog.addEventListener("click", () => {
       showScreen("screen-catalog");
       renderCatalogo();
-      const input = document.getElementById("catalog-search-input");
-      if (input) input.focus();
     });
   }
 
@@ -531,8 +529,6 @@ function bindEvents() {
     btnResultsAddMore.addEventListener("click", () => {
       showScreen("screen-catalog");
       renderCatalogo();
-      const input = document.getElementById("catalog-search-input");
-      if (input) input.focus();
     });
   }
 
