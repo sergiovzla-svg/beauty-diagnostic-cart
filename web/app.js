@@ -191,7 +191,8 @@ function saveCartToStorage() {
           id: item.product.id,
           formato: item.product.formato,
           quantity: item.quantity,
-          selected: item.selected
+          selected: item.selected,
+          fromRoutine: Boolean(item.fromRoutine)
         };
       }
     });
@@ -231,7 +232,8 @@ function loadCartFromStorage() {
           state.cart[key] = {
             product: prod,
             quantity: qty,
-            selected: item.selected !== false
+            selected: item.selected !== false,
+            fromRoutine: Boolean(item.fromRoutine)
           };
         }
       });
@@ -902,10 +904,12 @@ function calcularRecomendaciones() {
       state.cart[key] = {
         product: p,
         quantity: 1,
-        selected: true
+        selected: true,
+        fromRoutine: true
       };
     } else {
       state.cart[key].selected = true;
+      state.cart[key].fromRoutine = true;
     }
   });
 
@@ -1328,7 +1332,7 @@ function actualizarBarraCheckout() {
 
   const cartCountEl = document.getElementById("cart-items-count");
   if (cartCountEl) {
-    cartCountEl.textContent = `${totalProductos} ${totalProductos === 1 ? "producto seleccionado" : "productos seleccionados"}`;
+    cartCountEl.textContent = `${totalProductos} ${totalProductos === 1 ? "producto" : "productos"}`;
   }
   const cartPriceEl = document.getElementById("cart-total-price");
   if (cartPriceEl) {
@@ -1731,27 +1735,30 @@ function ejecutarCheckoutWhatsApp(customerName) {
     lineasProductos += `• ${item.quantity}x ${nombre} (${item.product.formato}) - ${formatCLP(subtotal)}\n`;
   });
 
-  // Resumen del diagnóstico si se realizó
-  const tieneDiagnostico = state.answers.patron || state.answers.raiz || state.answers.quimico || state.answers.objetivo;
-  const diagnosticoTxt = tieneDiagnostico
-    ? `Textura: ${state.answers.patron || "Natural"} | Raíz: ${state.answers.raiz || "Normal"} | Proceso: ${state.answers.quimico || "Normal"}`
-    : "Pedido directo desde Catálogo";
+  // Verificar si el pedido proviene legítimamente de un diagnóstico capilar completado
+  const tieneProductosRutina = itemsSeleccionados.some(item => item && item.fromRoutine === true);
+  const esPedidoDiagnostico = tieneProductosRutina && Boolean(state.recommendedProducts && state.recommendedProducts.length > 0);
 
   const saludoNombre = customerName ? `¡Hola! Soy *${customerName}*.\n` : "¡Hola!\n";
-  const saludo = tieneDiagnostico
-    ? `${saludoNombre}Acabo de completar el diagnóstico capilar L'Oréal Professionnel en la web y me gustaría reservar los siguientes productos de mi rutina:`
-    : `${saludoNombre}Estuve revisando el catálogo online de L'Oréal Professionnel y me gustaría reservar los siguientes productos:`;
+  const saludo = esPedidoDiagnostico
+    ? `${saludoNombre}Acabo de realizar el diagnóstico capilar L'Oréal Professionnel en la web y me gustaría reservar los siguientes productos de mi rutina:`
+    : `${saludoNombre}Estuve revisando el catálogo online de L'Oréal Professionnel y me gustaría consultar disponibilidad y reservar los siguientes productos:`;
 
-  const mensaje =
+  let mensaje =
     `${saludo}
 
 📋 PRODUCTOS SELECCIONADOS:
 ${lineasProductos}
 💰 TOTAL SUGERIDO DEL PEDIDO: ${formatCLP(totalCLP)}
+`;
 
-✨ (${tieneDiagnostico ? `Perfil diagnosticado: ${diagnosticoTxt}` : diagnosticoTxt})
+  // Solo incluir perfil si el pedido proviene de un diagnóstico capilar
+  if (esPedidoDiagnostico) {
+    const diagnosticoTxt = `Textura: ${state.answers.patron || "Natural"} | Raíz: ${state.answers.raiz || "Normal"} | Proceso: ${state.answers.quimico || "Normal"}`;
+    mensaje += `\n✨ (Perfil diagnosticado: ${diagnosticoTxt})\n`;
+  }
 
-¿Tienen disponibilidad en bodega para coordinar la entrega / despacho y los datos de transferencia? ¡Muchas gracias!`;
+  mensaje += `\n¿Tienen disponibilidad en bodega para coordinar la entrega / despacho y los datos de transferencia? ¡Muchas gracias!`;
 
   const phone = CONFIG.WHATSAPP_PHONE.replace(/\D/g, "");
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
