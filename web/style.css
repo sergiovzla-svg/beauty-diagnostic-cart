@@ -1513,7 +1513,7 @@ body {
   background: linear-gradient(135deg, #0f0f0f 0%, #1a1505 100%);
   border: 1px solid rgba(var(--gold-rgb, 198,160,50), 0.25);
   border-radius: 16px;
-  margin: 1rem 1rem 0;
+  margin: 2rem 0 1rem;
   padding: 1.5rem 1rem;
 }
 .flash-offers-header { 
