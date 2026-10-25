@@ -33,7 +33,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <div id="app" class="app-container">
@@ -258,13 +258,18 @@
     <!-- BARRA FLOTANTE FIJA INFERIOR (STICKY CHECKOUT BAR) -->
     <div id="sticky-cart-bar" class="sticky-cart hidden">
       <div class="sticky-inner">
-        <div class="cart-summary">
-          <span id="cart-items-count" class="cart-count">0 productos seleccionados</span>
-          <div class="cart-total-wrap">
-            <span class="cart-total-label">Total a pagar:</span>
-            <span id="cart-total-price" class="cart-price">$0 CLP</span>
+        <button id="btn-open-cart-modal" class="cart-summary-btn" type="button" aria-label="Ver productos seleccionados en el carrito">
+          <div class="cart-summary">
+            <div class="cart-count-row">
+              <span id="cart-items-count" class="cart-count">0 productos seleccionados</span>
+              <span class="cart-review-cue">Revisar 🛒</span>
+            </div>
+            <div class="cart-total-wrap">
+              <span class="cart-total-label">Total a pagar:</span>
+              <span id="cart-total-price" class="cart-price">$0 CLP</span>
+            </div>
           </div>
-        </div>
+        </button>
         <button id="btn-whatsapp-checkout" class="btn-whatsapp" type="button">
           <span class="whatsapp-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
@@ -282,7 +287,7 @@
         <button id="btn-close-modal" class="btn-modal-close" type="button" aria-label="Cerrar modal">✕</button>
         <div class="modal-header">
           <div class="modal-img-wrap">
-            <img id="modal-img" src="" alt="Producto">
+            <img id="modal-img" src="" alt="Producto" loading="lazy">
           </div>
           <div class="modal-meta">
             <span id="modal-line" class="product-line-badge"></span>
@@ -306,6 +311,49 @@
         </div>
         <div class="modal-footer">
           <button id="btn-modal-add" class="btn-primary" type="button">Incluir en mi Pedido</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL ELEGANTE DE CARRITO / REVISIÓN DE PEDIDO -->
+    <div id="cart-detail-modal" class="modal-backdrop hidden">
+      <div class="modal-card modal-card-cart">
+        <button id="btn-close-cart-modal" class="btn-modal-close" type="button" aria-label="Cerrar carrito">✕</button>
+        
+        <div class="cart-modal-header">
+          <div class="cart-modal-title-row">
+            <span class="cart-modal-icon">🛍️</span>
+            <div>
+              <h3 class="modal-title">Tu Pedido Actual</h3>
+              <p class="modal-sub" id="cart-modal-subtitle">Revisa tus productos seleccionados</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="cart-modal-body">
+          <div id="cart-modal-items" class="cart-modal-items-list">
+            <!-- Renderizado dinámicamente por JS -->
+          </div>
+        </div>
+
+        <div class="cart-modal-footer">
+          <div class="cart-modal-total-box">
+            <div class="cart-modal-subrow">
+              <span id="cart-modal-count-label">0 productos seleccionados</span>
+              <span id="cart-modal-total-amount" class="cart-modal-total-price">$0 CLP</span>
+            </div>
+          </div>
+          <div class="cart-modal-actions">
+            <button id="btn-cart-modal-whatsapp" class="btn-whatsapp w-100" type="button">
+              <span class="whatsapp-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.031 2C6.495 2 2 6.492 2 12.028c0 1.769.46 3.498 1.332 5.018L2 22l5.127-1.344a10.007 10.007 0 004.904 1.282h.004c5.536 0 10.03-4.493 10.03-10.03C22.065 6.492 17.568 2 12.031 2zm0 18.358h-.004a8.318 8.318 0 01-4.24-1.162l-.304-.18-3.155.827.842-3.076-.198-.315a8.32 8.32 0 01-1.277-4.424c0-4.606 3.748-8.354 8.357-8.354 4.608 0 8.356 3.748 8.356 8.354 0 4.606-3.748 8.354-8.38 8.354zm4.582-6.257c-.251-.126-1.488-.734-1.718-.818-.23-.084-.397-.126-.564.126-.168.252-.649.818-.795.986-.147.168-.293.189-.544.063-.251-.126-1.06-.391-2.02-1.246-.746-.666-1.25-1.489-1.396-1.741-.147-.252-.016-.388.11-.513.113-.113.251-.294.377-.441.125-.147.167-.252.251-.42.084-.168.042-.315-.021-.441-.063-.126-.565-1.365-.774-1.869-.204-.492-.41-.425-.564-.433-.146-.008-.314-.01-.481-.01-.168 0-.44.063-.67.315-.23.252-.879.86-.879 2.097 0 1.237.9 2.433 1.026 2.601.125.168 1.77 2.703 4.288 3.791.6.259 1.068.413 1.433.529.602.191 1.15.164 1.583.1.483-.072 1.488-.608 1.697-1.196.21-.588.21-1.092.147-1.197-.063-.105-.23-.168-.481-.294z"/>
+                </svg>
+              </span>
+              <span>Confirmar y Pedir por WhatsApp</span>
+            </button>
+            <button id="btn-cart-modal-continue" class="btn-text" type="button">Seguir explorando productos</button>
+          </div>
         </div>
       </div>
     </div>
@@ -347,6 +395,6 @@
 
   <!-- Catálogo de Productos (Soporta ejecución directa local offline y servidor) -->
   <script src="data/productos.js?v=3"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

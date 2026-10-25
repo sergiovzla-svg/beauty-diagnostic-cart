@@ -60,12 +60,21 @@ def exportar_catalogo_a_web(solo_piloto: bool = True):
         necesidad = str(ws.cell(r, 31).value or "Cuidado General").strip()
         paso = str(ws.cell(r, 32).value or "1. Shampoo").strip()
 
-        # Copiar imagen a la carpeta web si existe
+        # Determinar nombre de imagen (preferir formato .webp optimizado)
+        foto_final = ""
         if foto:
-            src_img = OUTPUT_IMAGES_DIR / foto
-            dst_img = WEB_IMAGES_DIR / foto
+            foto_stem = Path(foto).stem
+            foto_webp = f"{foto_stem}.webp"
+            if (OUTPUT_IMAGES_DIR / foto_webp).exists():
+                foto_archivo = foto_webp
+            else:
+                foto_archivo = foto
+
+            src_img = OUTPUT_IMAGES_DIR / foto_archivo
+            dst_img = WEB_IMAGES_DIR / foto_archivo
             if src_img.exists():
                 shutil.copy2(src_img, dst_img)
+            foto_final = f"images/{foto_archivo}"
 
         # Construir registro limpio para JavaScript
         item = {
@@ -77,7 +86,7 @@ def exportar_catalogo_a_web(solo_piloto: bool = True):
             "stock": stock,
             "precio_venta": p_venta,
             "precio_mercado": p_mercado,
-            "foto": f"images/{foto}" if foto else "",
+            "foto": foto_final,
             "resena": resena,
             "rango_mercado": rango,
             "patron": [p.strip() for p in patron.split(",")],
