@@ -442,6 +442,13 @@ async function cargarCatalogo() {
   if (badge) badge.textContent = state.catalog.length;
   const countEl = document.getElementById("catalog-count-text");
   if (countEl) countEl.textContent = `Mostrando ${state.catalog.length} productos`;
+  const allFilterPill = document.querySelector('.filter-pill[data-filter="all"]');
+  if (allFilterPill) allFilterPill.textContent = `Todos (${state.catalog.length})`;
+  const btnGotoCatalog = document.getElementById("btn-goto-catalog");
+  if (btnGotoCatalog) {
+    const span = btnGotoCatalog.querySelector("span:first-child");
+    if (span) span.textContent = `🔍 Buscar en Catálogo Completo (${state.catalog.length} productos)`;
+  }
 
   // Restaurar carrito y sincronizar barra
   loadCartFromStorage();

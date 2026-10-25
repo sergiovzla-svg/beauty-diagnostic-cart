@@ -16,12 +16,12 @@ WEB_DIR = BASE_DIR / "web"
 WEB_DATA_DIR = WEB_DIR / "data"
 WEB_IMAGES_DIR = WEB_DIR / "images"
 
-# 5 Productos piloto para el lanzamiento inicial
+# 5 Productos piloto para el lanzamiento inicial (opcional)
 PILOT_IDS = {"LOR-0004", "LOR-0003", "LOR-0005", "LOR-0021", "LOR-0068"}
 
-def exportar_catalogo_a_web(solo_piloto: bool = True):
+def exportar_catalogo_a_web(solo_piloto: bool = False):
     print("=== EXPORTANDO CATÁLOGO A LA WEB APP ESTÁTICA ===")
-    print(f"Modo: {'PILOTO (5 productos)' if solo_piloto else 'COMPLETO (todos los productos)'}")
+    print(f"Modo: {'PILOTO (5 productos)' if solo_piloto else 'COMPLETO (todos los productos activos)'}")
     
     if not EXCEL_PATH.exists():
         raise FileNotFoundError(f"No se encontró el archivo Excel en {EXCEL_PATH}")
@@ -33,6 +33,7 @@ def exportar_catalogo_a_web(solo_piloto: bool = True):
     ws = wb["Control de Inventario"]
 
     productos = []
+    omitidos = []
     
     for r in range(8, ws.max_row + 1):
         id_prod = ws.cell(r, 1).value
@@ -40,14 +41,32 @@ def exportar_catalogo_a_web(solo_piloto: bool = True):
             continue
             
         id_str = str(id_prod).strip()
+        nombre_comercial = str(ws.cell(r, 4).value or "").strip()
+
+        # Filtrar productos marcados para eliminación en Columna A
+        if "eliminar" in id_str.lower() or not id_str.upper().startswith("LOR-"):
+            omitidos.append((r, id_str, nombre_comercial))
+            continue
+
         if solo_piloto and id_str not in PILOT_IDS:
             continue
 
-        nombre_comercial = str(ws.cell(r, 4).value or "").strip()
         formato = str(ws.cell(r, 5).value or "").strip()
         stock = int(ws.cell(r, 7).value or 0)
-        p_mercado = ws.cell(r, 16).value or 0
-        p_venta = int(ws.cell(r, 17).value or 0)
+
+        # Precio Mercado (Col P / 16) y Mi Precio Venta (Col Q / 17)
+        raw_mercado = ws.cell(r, 16).value
+        try:
+            p_mercado = int(float(str(raw_mercado).replace(',', '.'))) if raw_mercado is not None else 0
+        except (ValueError, TypeError):
+            p_mercado = 0
+
+        raw_venta = ws.cell(r, 17).value
+        try:
+            p_venta = int(float(str(raw_venta).replace(',', '.'))) if raw_venta is not None else 0
+        except (ValueError, TypeError):
+            p_venta = 0
+
         foto = str(ws.cell(r, 20).value or "").strip()
         resena = str(ws.cell(r, 21).value or "").strip()
         rango = str(ws.cell(r, 22).value or "").strip()
@@ -112,12 +131,17 @@ def exportar_catalogo_a_web(solo_piloto: bool = True):
         json.dump(productos, f, ensure_ascii=False, indent=2)
         f.write(";\n")
 
-    print(f"Exportados {len(productos)} productos exitosamente a: {out_json} y {out_js}")
+    print(f"Omitidos {len(omitidos)} productos marcados para eliminación:")
+    for fila, id_txt, nom in omitidos:
+        print(f"  - Fila {fila}: [{id_txt}] {nom}")
+
+    print(f"\nExportados {len(productos)} productos activos exitosamente a: {out_json} y {out_js}")
     print(f"Imágenes listas en: {WEB_IMAGES_DIR}")
     return len(productos)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Exportar catálogo Excel a Web App")
-    parser.add_argument("--all", action="store_true", help="Exportar catálogo completo de 62 productos en vez del piloto")
+    parser.add_argument("--pilot", action="store_true", help="Exportar solo piloto de 5 productos")
+    parser.add_argument("--all", action="store_true", help="Exportar catálogo completo de productos activos (por defecto)")
     args = parser.parse_args()
-    exportar_catalogo_a_web(solo_piloto=not args.all)
+    exportar_catalogo_a_web(solo_piloto=args.pilot)
