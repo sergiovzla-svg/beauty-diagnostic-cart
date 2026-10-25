@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "salon-pro",
+  "name": "salon",
   "compatibility_date": "2026-10-25",
   "assets": {
     "directory": "./web"
