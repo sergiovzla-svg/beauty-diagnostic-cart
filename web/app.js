@@ -416,6 +416,7 @@ function renderFlashBanner() {
 // -------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarCatalogo();
+  renderPregunta(0);
   bindEvents();
 });
 
@@ -490,7 +491,8 @@ function bindEvents() {
     tabQuiz.addEventListener("click", () => {
       if (state.recommendedProducts.length > 0) {
         showScreen("screen-results");
-      } else if (state.answers.patron) {
+      } else if (state.currentScreen === "screen-quiz" || (state.answers && Object.values(state.answers).some(Boolean))) {
+        renderPregunta(state.currentQuestionIndex || 0);
         showScreen("screen-quiz");
       } else {
         showScreen("screen-intro");
@@ -601,7 +603,19 @@ function bindEvents() {
     try {
       localStorage.removeItem("loreal_quiz_answers");
     } catch (e) {}
-    showToast("Diagnóstico reiniciado. Puedes volver a completarlo cuando desees.", "info", 2500);
+    // Desmarcar productos de la rutina anterior para no duplicar al formular otra
+    if (state.recommendedProducts && state.recommendedProducts.length > 0) {
+      state.recommendedProducts.forEach(p => {
+        const key = p.id + "_" + p.formato;
+        if (state.cart[key]) {
+          state.cart[key].selected = false;
+        }
+      });
+      state.recommendedProducts = [];
+      saveCartToStorage();
+      actualizarBarraCheckout();
+    }
+    showToast("Diagnóstico reiniciado. Puedes volver a formular tu rutina.", "info", 2500);
     showScreen("screen-intro");
   });
 
@@ -664,6 +678,9 @@ function bindEvents() {
       if (e.target.id === "cart-detail-modal") cerrarModalCarrito();
     });
   }
+
+  const btnClearCart = document.getElementById("btn-cart-modal-clear");
+  if (btnClearCart) btnClearCart.addEventListener("click", vaciarPedidoCompleto);
 
   const btnCartWhatsapp = document.getElementById("btn-cart-modal-whatsapp");
   if (btnCartWhatsapp) {
@@ -1498,6 +1515,11 @@ function renderCartModal() {
     }
   }
 
+  const btnClear = document.getElementById("btn-cart-modal-clear");
+  if (btnClear) {
+    btnClear.style.display = itemsSeleccionados.length === 0 ? "none" : "inline-flex";
+  }
+
   if (itemsSeleccionados.length === 0) {
     container.innerHTML = `
       <div class="cart-empty-state">
@@ -1526,7 +1548,7 @@ function renderCartModal() {
       <div class="cart-item-details">
         <div class="cart-item-top">
           <span class="cart-item-line">${prod.linea}</span>
-          <button class="btn-cart-remove" type="button" data-action="cart-remove" data-key="${key}" title="Quitar del pedido">✕</button>
+          <button class="btn-cart-remove" type="button" data-action="cart-remove" data-key="${key}" title="Eliminar producto">✕ Eliminar</button>
         </div>
         <h4 class="cart-item-title">${prod.titulo_comercial || prod.nombre}</h4>
         <div class="cart-item-format">Formato: ${prod.formato}</div>
@@ -1580,6 +1602,21 @@ function renderCartModal() {
 
     container.appendChild(row);
   });
+}
+
+function vaciarPedidoCompleto() {
+  const keys = Object.keys(state.cart);
+  if (keys.length === 0) return;
+  keys.forEach(key => {
+    if (state.cart[key]) {
+      state.cart[key].selected = false;
+      sincronizarDesmarcarProducto(key);
+    }
+  });
+  saveCartToStorage();
+  actualizarBarraCheckout();
+  renderCartModal();
+  showToast("Se vació todo el pedido.", "info", 2000);
 }
 
 function sincronizarDesmarcarProducto(key) {
@@ -1710,7 +1747,7 @@ function ejecutarCheckoutWhatsApp(customerName) {
 
 📋 PRODUCTOS SELECCIONADOS:
 ${lineasProductos}
-💰 TOTAL A PAGAR: ${formatCLP(totalCLP)}
+💰 TOTAL SUGERIDO DEL PEDIDO: ${formatCLP(totalCLP)}
 
 ✨ (${tieneDiagnostico ? `Perfil diagnosticado: ${diagnosticoTxt}` : diagnosticoTxt})
 
