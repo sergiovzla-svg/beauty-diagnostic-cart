@@ -1757,6 +1757,7 @@ function ejecutarCheckoutWhatsApp(customerName) {
 📋 PRODUCTOS SELECCIONADOS:
 ${lineasProductos}
 💰 TOTAL SUGERIDO DEL PEDIDO: ${formatCLP(totalCLP)}
+📍 Entrega en San Pedro de la Paz / Concepción (a convenir)
 `;
 
   // Solo incluir perfil si el pedido proviene de un diagnóstico capilar
@@ -1765,7 +1766,7 @@ ${lineasProductos}
     mensaje += `\n✨ (Perfil diagnosticado: ${diagnosticoTxt})\n`;
   }
 
-  mensaje += `\n¿Tienen disponibilidad en bodega para coordinar la entrega / despacho y los datos de transferencia? ¡Muchas gracias!`;
+  mensaje += `\n¿Tienen disponibilidad para coordinar la entrega y los datos de transferencia? ¡Muchas gracias!`;
 
   const phone = CONFIG.WHATSAPP_PHONE.replace(/\D/g, "");
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;

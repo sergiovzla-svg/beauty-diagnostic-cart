@@ -82,6 +82,36 @@ body {
 }
 
 /* -------------------------------------------------------------
+   CINTA SUPERIOR INFORMATIVA (ANNOUNCEMENT BAR)
+   ------------------------------------------------------------- */
+.top-announcement-bar {
+  background: linear-gradient(90deg, #181410 0%, #261f15 50%, #181410 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.4);
+  color: #eed699;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  text-align: center;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.35;
+  position: relative;
+  z-index: 45;
+}
+
+.top-announcement-bar strong {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.top-announcement-bar .announcement-pin {
+  font-size: 0.82rem;
+}
+
+/* -------------------------------------------------------------
    HEADER DE MARCA
    ------------------------------------------------------------- */
 .luxury-header {
@@ -2011,6 +2041,26 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.cart-delivery-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 0.76rem;
+  color: #dfd8cc;
+  text-align: center;
+  line-height: 1.35;
+}
+.cart-delivery-badge strong {
+  color: #f3dfa2;
+}
+.cart-delivery-badge .delivery-icon {
+  font-size: 0.85rem;
 }
 #cart-modal-count-label {
   font-size: 0.82rem;
