@@ -5,7 +5,8 @@ Sistema integral que combina:
 2. **Web App E-commerce & Diagnóstico Capilar:** Aplicación web moderna con diagnóstico personalizado, catálogo de 62 productos en stock, buscador en tiempo real, carrito sincronizado y checkout directo por WhatsApp.
 3. **Control de Inventario y Tasación:** Planilla Excel interactiva con KPIs dinámicos, miniaturas y valorización comercial en CLP.
 
-🌐 **Sitio Web en Vivo:** [https://liquidacion-productos-loreal.netlify.app/](https://liquidacion-productos-loreal.netlify.app/)
+🌐 **Sitio Web en Vivo (Cloudflare - Ancho de Banda Ilimitado):** [https://beauty-diagnostic-cart.sergio-vzla.workers.dev/](https://beauty-diagnostic-cart.sergio-vzla.workers.dev/)  
+*(Backup / Espejo Netlify: [https://liquidacion-productos-loreal.netlify.app/](https://liquidacion-productos-loreal.netlify.app/))*
 
 ---
 
