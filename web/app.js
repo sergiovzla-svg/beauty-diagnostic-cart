@@ -546,6 +546,13 @@ function bindEvents() {
   // Buscador en tiempo real
   const searchInput = document.getElementById("catalog-search-input");
   const btnClearSearch = document.getElementById("btn-clear-search");
+  const catalogList = document.getElementById("catalog-products-list");
+
+  const dismissSearchKeyboard = () => {
+    if (searchInput && document.activeElement === searchInput) {
+      searchInput.blur();
+    }
+  };
 
   if (searchInput) {
     searchInput.addEventListener("input", (e) => {
@@ -555,7 +562,32 @@ function bindEvents() {
       }
       renderCatalogo();
     });
+
+    // Cerrar teclado virtual móvil al presionar "Buscar" o "Enter"
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        searchInput.blur();
+      }
+    });
+
+    // Evento search nativo del navegador
+    searchInput.addEventListener("search", () => {
+      searchInput.blur();
+    });
   }
+
+  // Cerrar teclado automáticamente al deslizar o interactuar con el catálogo de resultados
+  if (catalogList) {
+    catalogList.addEventListener("touchstart", dismissSearchKeyboard, { passive: true });
+    catalogList.addEventListener("touchmove", dismissSearchKeyboard, { passive: true });
+  }
+
+  // Cerrar teclado al hacer scroll vertical en la pantalla del catálogo
+  window.addEventListener("scroll", () => {
+    if (state.currentScreen === "screen-catalog") {
+      dismissSearchKeyboard();
+    }
+  }, { passive: true });
 
   if (btnClearSearch) {
     btnClearSearch.addEventListener("click", () => {
@@ -563,7 +595,7 @@ function bindEvents() {
         searchInput.value = "";
         state.catalogSearchTerm = "";
         btnClearSearch.classList.add("hidden");
-        searchInput.focus();
+        searchInput.blur();
         renderCatalogo();
       }
     });
@@ -572,6 +604,7 @@ function bindEvents() {
   // Filtros de Categoría (Pills)
   document.querySelectorAll(".filter-pill").forEach(pill => {
     pill.addEventListener("click", () => {
+      dismissSearchKeyboard();
       document.querySelectorAll(".filter-pill").forEach(p => p.classList.remove("active"));
       pill.classList.add("active");
       state.catalogFilter = pill.getAttribute("data-filter") || "all";

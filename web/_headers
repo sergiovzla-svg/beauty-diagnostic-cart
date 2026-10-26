@@ -8,6 +8,9 @@
   # Controla información que se envía al salir del sitio
   Referrer-Policy: strict-origin-when-cross-origin
 
+  # HSTS (Strict-Transport-Security): fuerza conexión HTTPS segura por 1 año incluyendo subdominios
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+
   # Bloquea acceso a cámara, micrófono, geolocalización, etc.
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
 
