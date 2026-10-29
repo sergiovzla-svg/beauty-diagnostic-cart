@@ -406,6 +406,7 @@ function renderCompactCards(products, containerId) {
         showToast(`✓ Agregado al pedido: ${prod.titulo_comercial || prod.nombre}`, "success", 2000);
       }
     });
+    }
 
     container.appendChild(card);
   });
@@ -1322,31 +1323,36 @@ function renderCatalogo() {
           }
         }
 
-      actualizarBarraCheckout();
-    });
+        actualizarBarraCheckout();
+      });
+    }
 
     // Stepper decrementar
     const btnDec = card.querySelector('[data-action="cat-dec"]');
-    btnDec.addEventListener("click", () => {
-      if (state.cart[key] && state.cart[key].quantity > 1) {
-        state.cart[key].quantity--;
-        actualizarStepperCatalogo(key, prod);
-        actualizarBarraCheckout();
-      }
-    });
+    if (btnDec) {
+      btnDec.addEventListener("click", () => {
+        if (state.cart[key] && state.cart[key].quantity > 1) {
+          state.cart[key].quantity--;
+          actualizarStepperCatalogo(key, prod);
+          actualizarBarraCheckout();
+        }
+      });
+    }
 
     // Stepper incrementar
     const btnInc = card.querySelector('[data-action="cat-inc"]');
-    btnInc.addEventListener("click", () => {
-      if (!state.cart[key]) {
-        state.cart[key] = { product: prod, quantity: 1, selected: true };
-      }
-      if (state.cart[key].quantity < prod.stock) {
-        state.cart[key].quantity++;
-        actualizarStepperCatalogo(key, prod);
-        actualizarBarraCheckout();
-      }
-    });
+    if (btnInc) {
+      btnInc.addEventListener("click", () => {
+        if (!state.cart[key]) {
+          state.cart[key] = { product: prod, quantity: 1, selected: true };
+        }
+        if (state.cart[key].quantity < prod.stock) {
+          state.cart[key].quantity++;
+          actualizarStepperCatalogo(key, prod);
+          actualizarBarraCheckout();
+        }
+      });
+    }
 
     container.appendChild(card);
   });
@@ -1525,6 +1531,7 @@ function abrirModal(prod, key) {
     showToast(`✓ Agregado al pedido: ${prod.titulo_comercial || prod.nombre}`, "success", 2500);
     cerrarModal();
   };
+  }
 
   modal.classList.remove("hidden");
   document.body.style.overflow = "hidden";
