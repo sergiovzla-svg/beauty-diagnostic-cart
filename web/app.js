@@ -317,9 +317,16 @@ function renderCompactCards(products, containerId) {
       ? `<small class="product-category-tip">${catInfo.tip}</small>`
       : "";
 
+    const isAgotado = (prod.stock || 0) <= 0;
     const card = document.createElement("article");
-    card.className = `compact-card ${isSelected ? "in-cart" : ""}`;
+    card.className = `compact-card ${isSelected ? "in-cart" : ""} ${isAgotado ? "is-soldout" : ""}`;
     card.id = `${containerId}-card-${key}`;
+
+    const actionBtnHtml = isAgotado
+      ? `<button class="compact-action-btn soldout" type="button" disabled>🚫 Reservado</button>`
+      : `<button class="compact-action-btn ${isSelected ? "added" : ""}" type="button" data-action="toggle" data-key="${key}">
+          ${isSelected ? "En pedido ✓" : "+ Agregar"}
+        </button>`;
 
     card.innerHTML = `
       <div class="compact-img-wrap" data-action="details" data-key="${key}">
@@ -334,9 +341,7 @@ function renderCompactCards(products, containerId) {
           <span class="compact-price">${formatCLP(prod.precio_venta)}</span>
           ${prod.precio_mercado ? `<span class="compact-ref">Ref. ${formatCLP(prod.precio_mercado)}</span>` : ""}
         </div>
-        <button class="compact-action-btn ${isSelected ? "added" : ""}" type="button" data-action="toggle" data-key="${key}">
-          ${isSelected ? "En pedido ✓" : "+ Agregar"}
-        </button>
+        ${actionBtnHtml}
       </div>
     `;
 
@@ -347,7 +352,8 @@ function renderCompactCards(products, containerId) {
 
     // Toggle para agregar/quitar del pedido
     const btnToggle = card.querySelector('[data-action="toggle"]');
-    btnToggle.addEventListener("click", () => {
+    if (btnToggle) {
+      btnToggle.addEventListener("click", () => {
       if (!state.cart[key]) {
         state.cart[key] = { product: prod, quantity: 1, selected: true };
       } else {
@@ -409,7 +415,7 @@ function renderCompactCards(products, containerId) {
 // RENDERIZADO DEL BANNER HERO DE OFERTAS FLASH
 // -------------------------------------------------------------
 function renderFlashBanner() {
-  const productosFlash = state.catalog.filter(p => getCategoryInfo(p).category !== "cuidado");
+  const productosFlash = state.catalog.filter(p => getCategoryInfo(p).category !== "cuidado" && (p.stock || 0) > 0);
   renderCompactCards(productosFlash, "flash-offers-grid");
 }
 
@@ -1080,10 +1086,10 @@ function renderResultados() {
   const prevComp = document.getElementById("complementary-offers");
   if (prevComp) prevComp.remove();
 
-  // Productos complementarios (estilismo + complemento + para-ellos)
+  // Productos complementarios (estilismo + complemento + para-ellos) con stock disponible
   const productosComplementarios = state.catalog.filter(p => {
     const cat = getCategoryInfo(p).category;
-    return (cat === "estilismo" || cat === "complemento" || cat === "para-ellos");
+    return (cat === "estilismo" || cat === "complemento" || cat === "para-ellos") && (p.stock || 0) > 0;
   });
 
   if (productosComplementarios.length > 0) {
@@ -1208,12 +1214,15 @@ function renderCatalogo() {
     const key = prod.id + "_" + prod.formato;
     const cartItem = state.cart[key] || { product: prod, quantity: 1, selected: false };
 
+    const isAgotado = (prod.stock || 0) <= 0;
     const card = document.createElement("article");
-    card.className = `product-card ${cartItem.selected ? "in-cart" : ""}`;
+    card.className = `product-card ${cartItem.selected ? "in-cart" : ""} ${isAgotado ? "is-soldout" : ""}`;
     card.id = `catalog-card-${key}`;
 
     let stockBadgeHtml = "";
-    if (prod.stock === 1) {
+    if (isAgotado) {
+      stockBadgeHtml = `<span class="badge-scarcity soldout">🚫 Reservado</span>`;
+    } else if (prod.stock === 1) {
       stockBadgeHtml = `<span class="badge-scarcity urgent">🔥 ¡Última unidad en bodega!</span>`;
     } else if (prod.stock <= 3) {
       stockBadgeHtml = `<span class="badge-scarcity limited">⚡ Solo ${prod.stock} disponibles</span>`;
@@ -1228,6 +1237,21 @@ function renderCatalogo() {
     const tipHTML = catInfo.tip
       ? `<small class="product-category-tip">${catInfo.tip}</small>`
       : "";
+
+    const actionControlsHtml = isAgotado
+      ? `<button class="btn-soldout-disabled" type="button" disabled>🚫 Reservado</button>`
+      : `
+        <label class="toggle-btn">
+          <input type="checkbox" id="cat-check-${key}" ${cartItem.selected ? "checked" : ""}>
+          <span>${cartItem.selected ? "Agregado al pedido ✓" : "+ Agregar al pedido"}</span>
+        </label>
+
+        <div class="qty-stepper" id="cat-stepper-${key}" style="${cartItem.selected ? "" : "opacity: 0.3; pointer-events: none;"}">
+          <button class="btn-qty" type="button" data-action="cat-dec" data-key="${key}" ${cartItem.quantity <= 1 ? "disabled" : ""}>−</button>
+          <span class="qty-val" id="cat-qty-val-${key}">${cartItem.quantity}</span>
+          <button class="btn-qty" type="button" data-action="cat-inc" data-key="${key}" ${cartItem.quantity >= prod.stock ? "disabled" : ""}>+</button>
+        </div>
+      `;
 
     card.innerHTML = `
       <div class="routine-step-tag">
@@ -1259,17 +1283,7 @@ function renderCatalogo() {
       </div>
 
       <div class="card-actions">
-        <label class="toggle-btn">
-          <input type="checkbox" id="cat-check-${key}" ${cartItem.selected ? "checked" : ""}>
-          <span>${cartItem.selected ? "Agregado al pedido ✓" : "+ Agregar al pedido"}</span>
-        </label>
-
-        <div class="qty-stepper" id="cat-stepper-${key}" style="${cartItem.selected ? "" : "opacity: 0.3; pointer-events: none;"}">
-          <button class="btn-qty" type="button" data-action="cat-dec" data-key="${key}" ${cartItem.quantity <= 1 ? "disabled" : ""}>−</button>
-          <span class="qty-val" id="cat-qty-val-${key}">${cartItem.quantity}</span>
-          <button class="btn-qty" type="button" data-action="cat-inc" data-key="${key}" ${cartItem.quantity >= prod.stock ? "disabled" : ""}>+</button>
-        </div>
-
+        ${actionControlsHtml}
         <button class="btn-details" type="button" data-action="details" data-key="${key}">Ver detalles</button>
       </div>
     `;
@@ -1279,33 +1293,34 @@ function renderCatalogo() {
       el.addEventListener("click", () => abrirModal(prod, key));
     });
 
-    // Toggle Checkbox
+    // Toggle Checkbox (solo productos con stock disponible)
     const checkbox = card.querySelector(`#cat-check-${key}`);
-    checkbox.addEventListener("change", (e) => {
-      const isChecked = e.target.checked;
-      if (!state.cart[key]) {
-        state.cart[key] = { product: prod, quantity: 1, selected: isChecked };
-      } else {
-        state.cart[key].selected = isChecked;
-      }
-      card.classList.toggle("in-cart", isChecked);
-      card.querySelector(".toggle-btn span").textContent = isChecked ? "Agregado al pedido ✓" : "+ Agregar al pedido";
-      const stepper = card.querySelector(`#cat-stepper-${key}`);
-      if (stepper) {
-        stepper.style.opacity = isChecked ? "1" : "0.3";
-        stepper.style.pointerEvents = isChecked ? "auto" : "none";
-      }
-
-      // Sincronizar si también existe en la pantalla de rutina
-      const rutinaCheck = document.getElementById(`check-${key}`);
-      if (rutinaCheck) {
-        rutinaCheck.checked = isChecked;
-        const rutinaCard = document.getElementById(`card-${key}`);
-        if (rutinaCard) {
-          rutinaCard.classList.toggle("in-cart", isChecked);
-          rutinaCard.querySelector(".toggle-btn span").textContent = isChecked ? "Incluido en rutina" : "Agregar a rutina";
+    if (checkbox) {
+      checkbox.addEventListener("change", (e) => {
+        const isChecked = e.target.checked;
+        if (!state.cart[key]) {
+          state.cart[key] = { product: prod, quantity: 1, selected: isChecked };
+        } else {
+          state.cart[key].selected = isChecked;
         }
-      }
+        card.classList.toggle("in-cart", isChecked);
+        card.querySelector(".toggle-btn span").textContent = isChecked ? "Agregado al pedido ✓" : "+ Agregar al pedido";
+        const stepper = card.querySelector(`#cat-stepper-${key}`);
+        if (stepper) {
+          stepper.style.opacity = isChecked ? "1" : "0.3";
+          stepper.style.pointerEvents = isChecked ? "auto" : "none";
+        }
+
+        // Sincronizar si también existe en la pantalla de rutina
+        const rutinaCheck = document.getElementById(`check-${key}`);
+        if (rutinaCheck) {
+          rutinaCheck.checked = isChecked;
+          const rutinaCard = document.getElementById(`card-${key}`);
+          if (rutinaCard) {
+            rutinaCard.classList.toggle("in-cart", isChecked);
+            rutinaCard.querySelector(".toggle-btn span").textContent = isChecked ? "Incluido en rutina" : "Agregar a rutina";
+          }
+        }
 
       actualizarBarraCheckout();
     });
@@ -1415,11 +1430,15 @@ function actualizarBarraCheckout() {
 // -------------------------------------------------------------
 function abrirModal(prod, key) {
   const modal = document.getElementById("product-modal");
+  const isAgotado = (prod.stock || 0) <= 0;
+
   document.getElementById("modal-img").src = prod.foto;
   document.getElementById("modal-img").alt = prod.nombre;
   document.getElementById("modal-line").textContent = prod.linea;
   document.getElementById("modal-title").textContent = prod.titulo_comercial || prod.nombre;
-  document.getElementById("modal-format").textContent = `Formato profesional: ${prod.formato} • Stock: ${prod.stock} un.`;
+  document.getElementById("modal-format").textContent = isAgotado
+    ? `Formato profesional: ${prod.formato} • Estado: 🚫 Reservado`
+    : `Formato profesional: ${prod.formato} • Stock: ${prod.stock} un.`;
   document.getElementById("modal-price").textContent = formatCLP(prod.precio_venta);
   document.getElementById("modal-market-range").textContent = prod.rango_mercado ? `Precio mercado: ${prod.rango_mercado}` : "";
 
@@ -1445,8 +1464,18 @@ function abrirModal(prod, key) {
 
   // Botón de incluir en pedido
   const btnModalAdd = document.getElementById("btn-modal-add");
-  const isSelected = state.cart[key] && state.cart[key].selected;
-  btnModalAdd.textContent = isSelected ? "Ya está en tu pedido ✓" : "Incluir en mi Pedido";
+  if (isAgotado) {
+    btnModalAdd.textContent = "🚫 Producto Reservado";
+    btnModalAdd.disabled = true;
+    btnModalAdd.style.opacity = "0.5";
+    btnModalAdd.style.cursor = "not-allowed";
+    btnModalAdd.onclick = null;
+  } else {
+    btnModalAdd.disabled = false;
+    btnModalAdd.style.opacity = "";
+    btnModalAdd.style.cursor = "";
+    const isSelected = state.cart[key] && state.cart[key].selected;
+    btnModalAdd.textContent = isSelected ? "Ya está en tu pedido ✓" : "Incluir en mi Pedido";
 
   btnModalAdd.onclick = () => {
     if (!state.cart[key]) {

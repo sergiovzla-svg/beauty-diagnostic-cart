@@ -52,32 +52,36 @@ def exportar_catalogo_a_web(solo_piloto: bool = False):
             continue
 
         formato = str(ws.cell(r, 5).value or "").strip()
-        stock = int(ws.cell(r, 7).value or 0)
+        
+        # Conteo Físico (Col G / 7) y Reservados (Col H / 8) -> Disponible Web (Col I / 9)
+        stock_fisico = int(ws.cell(r, 7).value or 0)
+        reservados = int(ws.cell(r, 8).value or 0)
+        stock = max(0, stock_fisico - reservados)
 
-        # Precio Mercado (Col P / 16) y Mi Precio Venta (Col Q / 17)
-        raw_mercado = ws.cell(r, 16).value
+        # Precio Mercado (Col R / 18) y Mi Precio Venta (Col S / 19)
+        raw_mercado = ws.cell(r, 18).value
         try:
             p_mercado = int(float(str(raw_mercado).replace(',', '.'))) if raw_mercado is not None else 0
         except (ValueError, TypeError):
             p_mercado = 0
 
-        raw_venta = ws.cell(r, 17).value
+        raw_venta = ws.cell(r, 19).value
         try:
             p_venta = int(float(str(raw_venta).replace(',', '.'))) if raw_venta is not None else 0
         except (ValueError, TypeError):
             p_venta = 0
 
-        foto = str(ws.cell(r, 20).value or "").strip()
-        resena = str(ws.cell(r, 21).value or "").strip()
-        rango = str(ws.cell(r, 22).value or "").strip()
-        fuentes = str(ws.cell(r, 24).value or "").strip()
-        titulo_ml = str(ws.cell(r, 26).value or "").strip()
-        patron = str(ws.cell(r, 27).value or "Todos").strip()
-        grosor = str(ws.cell(r, 28).value or "Todos").strip()
-        raiz = str(ws.cell(r, 29).value or "Normal, Todos").strip()
-        quimico = str(ws.cell(r, 30).value or "Natural, Todos").strip()
-        necesidad = str(ws.cell(r, 31).value or "Cuidado General").strip()
-        paso = str(ws.cell(r, 32).value or "1. Shampoo").strip()
+        foto = str(ws.cell(r, 22).value or "").strip()
+        resena = str(ws.cell(r, 23).value or "").strip()
+        rango = str(ws.cell(r, 24).value or "").strip()
+        fuentes = str(ws.cell(r, 26).value or "").strip()
+        titulo_ml = str(ws.cell(r, 28).value or "").strip()
+        patron = str(ws.cell(r, 29).value or "Todos").strip()
+        grosor = str(ws.cell(r, 30).value or "Todos").strip()
+        raiz = str(ws.cell(r, 31).value or "Normal, Todos").strip()
+        quimico = str(ws.cell(r, 32).value or "Natural, Todos").strip()
+        necesidad = str(ws.cell(r, 33).value or "Cuidado General").strip()
+        paso = str(ws.cell(r, 34).value or "1. Shampoo").strip()
 
         # Determinar nombre de imagen (preferir formato .webp optimizado)
         foto_final = ""
@@ -103,6 +107,7 @@ def exportar_catalogo_a_web(solo_piloto: bool = False):
             "titulo_comercial": titulo_ml if titulo_ml else nombre_comercial,
             "formato": formato,
             "stock": stock,
+            "reservados": reservados,
             "precio_venta": p_venta,
             "precio_mercado": p_mercado,
             "foto": foto_final,
